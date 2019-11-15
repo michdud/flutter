@@ -22,12 +22,16 @@ import 'package:flutter_gallery/demo/shrine/home.dart';
 import 'package:flutter_gallery/demo/shrine/login.dart';
 import 'package:flutter_gallery/demo/shrine/supplemental/cut_corners_border.dart';
 
+import 'expanding_bottom_sheet.dart';
+
 class ShrineApp extends StatefulWidget {
   @override
   _ShrineAppState createState() => _ShrineAppState();
 }
 
 class _ShrineAppState extends State<ShrineApp> with SingleTickerProviderStateMixin {
+  final GlobalKey<ExpandingBottomSheetState> expandingBottomSheetStateKey =
+      GlobalKey<ExpandingBottomSheetState>();
   // Controller to coordinate both the opening/closing of backdrop and sliding
   // of expanding bottom sheet
   AnimationController _controller;
@@ -44,23 +48,28 @@ class _ShrineAppState extends State<ShrineApp> with SingleTickerProviderStateMix
 
   @override
   Widget build(BuildContext context) {
-    return MaterialApp(
-      title: 'Shrine',
-      home: HomePage(
-        backdrop: Backdrop(
-          frontLayer: const ProductPage(),
-          backLayer: CategoryMenuPage(onCategoryTap: () => _controller.forward()),
-          frontTitle: const Text('SHRINE'),
-          backTitle: const Text('MENU'),
-          controller: _controller,
+    return WillPopScope(
+      onWillPop: () => expandingBottomSheetStateKey.currentState.onWillPop(),
+      child: MaterialApp(
+        title: 'Shrine',
+        home: HomePage(
+          backdrop: Backdrop(
+            frontLayer: const ProductPage(),
+            backLayer:
+                CategoryMenuPage(onCategoryTap: () => _controller.forward()),
+            frontTitle: const Text('SHRINE'),
+            backTitle: const Text('MENU'),
+            controller: _controller,
+          ),
+          expandingBottomSheet: ExpandingBottomSheet(
+              key: expandingBottomSheetStateKey, hideController: _controller),
         ),
-        expandingBottomSheet: ExpandingBottomSheet(hideController: _controller),
+        initialRoute: '/login',
+        onGenerateRoute: _getRoute,
+        // Copy the platform from the main theme in order to support platform
+        // toggling from the Gallery options menu.
+        theme: _kShrineTheme.copyWith(platform: Theme.of(context).platform),
       ),
-      initialRoute: '/login',
-      onGenerateRoute: _getRoute,
-      // Copy the platform from the main theme in order to support platform
-      // toggling from the Gallery options menu.
-      theme: _kShrineTheme.copyWith(platform: Theme.of(context).platform),
     );
   }
 }

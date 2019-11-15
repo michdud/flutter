@@ -45,13 +45,13 @@ class ExpandingBottomSheet extends StatefulWidget {
   final AnimationController hideController;
 
   @override
-  _ExpandingBottomSheetState createState() => _ExpandingBottomSheetState();
+  ExpandingBottomSheetState createState() => ExpandingBottomSheetState();
 
-  static _ExpandingBottomSheetState of(BuildContext context, {bool isNullOk = false}) {
+  static ExpandingBottomSheetState of(BuildContext context, {bool isNullOk = false}) {
     assert(isNullOk != null);
     assert(context != null);
-    final _ExpandingBottomSheetState result = context.ancestorStateOfType(
-      const TypeMatcher<_ExpandingBottomSheetState>()
+    final ExpandingBottomSheetState result = context.ancestorStateOfType(
+      const TypeMatcher<ExpandingBottomSheetState>()
     );
     if (isNullOk || result != null) {
       return result;
@@ -116,7 +116,7 @@ double _getPeakPoint({double begin, double end}) {
   return begin + (end - begin) * _kPeakVelocityProgress;
 }
 
-class _ExpandingBottomSheetState extends State<ExpandingBottomSheet> with TickerProviderStateMixin {
+class ExpandingBottomSheetState extends State<ExpandingBottomSheet> with TickerProviderStateMixin {
   final GlobalKey _expandingBottomSheetKey = GlobalKey(debugLabel: 'Expanding bottom sheet');
 
   // The width of the Material, calculated by _widthFor() & based on the number
@@ -380,14 +380,13 @@ class _ExpandingBottomSheetState extends State<ExpandingBottomSheet> with Ticker
 
   // Closes the cart if the cart is open, otherwise exits the app (this should
   // only be relevant for Android).
-  Future<bool> _onWillPop() async {
+  Future<bool> onWillPop() async {
     if (!_isOpen) {
-      await SystemNavigator.pop();
       return true;
     }
 
     close();
-    return true;
+    return false;
   }
 
   @override
@@ -398,22 +397,19 @@ class _ExpandingBottomSheetState extends State<ExpandingBottomSheet> with Ticker
       curve: Curves.easeInOut,
       vsync: this,
       alignment: FractionalOffset.topLeft,
-      child: WillPopScope(
-        onWillPop: _onWillPop,
-        child: AnimatedBuilder(
-          animation: widget.hideController,
-          builder: _buildSlideAnimation,
-          child: GestureDetector(
-            behavior: HitTestBehavior.opaque,
-            onTap: open,
-            child: ScopedModelDescendant<AppStateModel>(
-              builder: (BuildContext context, Widget child, AppStateModel model) {
-                return AnimatedBuilder(
-                  builder: _buildCart,
-                  animation: _controller,
-                );
-              },
-            ),
+      child: AnimatedBuilder(
+        animation: widget.hideController,
+        builder: _buildSlideAnimation,
+        child: GestureDetector(
+          behavior: HitTestBehavior.opaque,
+          onTap: open,
+          child: ScopedModelDescendant<AppStateModel>(
+            builder: (BuildContext context, Widget child, AppStateModel model) {
+              return AnimatedBuilder(
+                builder: _buildCart,
+                animation: _controller,
+              );
+            },
           ),
         ),
       ),
